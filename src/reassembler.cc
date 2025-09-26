@@ -10,14 +10,15 @@ using namespace std;
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring )
 {
 	//cout<<endl<<"Here I am!!! "<<" "<<first_index<<" "<<data<<" "<<is_last_substring<<endl;
-  if(is_last_substring)
+  if(is_last_substring){
     this->_eof = true;
-
-  debug("I was in here 2");
+    this->_eof_index = first_index+data.size();
+  }
+  cout<<"\nI was in here 2 "<<data;
 
   // skip already being pushed data
   if(first_index + data.size()  <=next_expected_index){
-    if(_eof && this->unpushed_data.empty())
+    if(_eof && this->unpushed_data.empty() && this->next_expected_index == this->_eof_index)
       output_.writer().close();
     return;
   }
@@ -27,27 +28,39 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
     first_index = next_expected_index;
   }
 
+  // calculating window capacity
+  size_t available = output_.writer().available_capacity();
+  uint64_t window_end = next_expected_index + available;
+
+  if(first_index >= window_end){
+    if(_eof && this->unpushed_data.empty() && this->next_expected_index == this->_eof_index)
+      output_.writer().close();
+    return;
+  }
+
+  // trim data if partial data will be included in window
+  if(first_index + data.size() > window_end){
+    data = data.substr(0,window_end-first_index);
+  }
 
   if(this->next_expected_index != first_index){
-    debug("I was in here");
+    cout<<" I was in here "<<data<<" ";
     size_t pending_bytes = count_bytes_pending();
     size_t available_capacity = output_.writer().available_capacity();
-    size_t free_capacity = (available_capacity > pending_bytes) ? (available_capacity - pending_bytes) : 0;
+    size_t free_capacity = (available_capacity >
+                            pending_bytes) ? (available_capacity - pending_bytes) : 0;
 
    
     if(data.size() > free_capacity){
-      if(_eof && this->unpushed_data.empty())
+      if(_eof && this->unpushed_data.empty() && this->next_expected_index == this->_eof_index)
         output_.writer().close();
       return;
     }
 
-
-
-
-
       this->unpushed_data[first_index] = move(data);
+      cout<<count_bytes_pending();
 
-    if(_eof && this->unpushed_data.empty())
+    if(_eof && this->unpushed_data.empty() && this->next_expected_index == this->_eof_index)
       output_.writer().close();
     return;
   }
@@ -59,6 +72,9 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   // push as much data as you can
   output_.writer().push(data.substr(0,push_len));
   this->next_expected_index += push_len;
+
+  if(push_len < data.size())
+    this->unpushed_data[this->next_expected_index] = data.substr(push_len);
 
 
   // checking unpushed data if those bad boys deserve to be pushed
@@ -81,7 +97,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   }
 
   // checking if we should close the write buffer in case it is eof and the unpushed_data map is empty
-  if(_eof && this->unpushed_data.empty()){
+  if(_eof && this->unpushed_data.empty() && this->next_expected_index == this->_eof_index){
       output_.writer().close();
   }
 

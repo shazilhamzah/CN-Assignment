@@ -1,10 +1,15 @@
 #include "reassembler.hh"
 #include "debug.hh"
+#include "byte_stream.hh"
+#include<iostream>
 
 using namespace std;
 
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring )
 {
+	cout<<endl<<"Here I am!!! "<<" "<<first_index<<" "<<data<<" "<<is_last_substring<<endl;
+	if(first_index == this->next_expected_index){
+    
   debug( "unimplemented insert({}, {}, {}) called", first_index, data, is_last_substring );
 }
 

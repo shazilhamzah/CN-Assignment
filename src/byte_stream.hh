@@ -1,9 +1,9 @@
 #pragma once
 
+#include <algorithm> // added for using min function
 #include <cstdint>
 #include <string>
 #include <string_view>
-#include <algorithm> // added for using min function
 
 using namespace std;
 
@@ -13,7 +13,7 @@ class Writer;
 class ByteStream
 {
 public:
- explicit ByteStream(uint64_t capacity);
+  explicit ByteStream( uint64_t capacity );
 
   // Helper functions (provided) to access the ByteStream's Reader and Writer interfaces
   Reader& reader();
@@ -26,15 +26,14 @@ public:
 
 protected:
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
-  string buffer; 
+  string buffer;
   uint64_t capacity_;
   bool error_ {};
-  bool writer_closed = false; // used to keep track of well whether the writer end has been closed
+  bool writer_closed = false;      // used to keep track of well whether the writer end has been closed
   uint64_t bytes_pushed_count = 0; // push count
-  uint64_t bytes_popped_count = 0;  // pop count
-  uint64_t bytes_to_push = 0; // total bytes to push
-  uint64_t bytes_to_pop = 0; // total bytes to pop
-  
+  uint64_t bytes_popped_count = 0; // pop count
+  uint64_t bytes_to_push = 0;      // total bytes to push
+  uint64_t bytes_to_pop = 0;       // total bytes to pop
 };
 
 class Writer : public ByteStream

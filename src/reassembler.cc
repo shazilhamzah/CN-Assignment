@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 void Reassembler::insert( uint64_t first_index, string data, bool is_last_substring )
 {
   if ( is_last_substring ) {
@@ -34,7 +33,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   if ( first_index >= capacity_limit )
     return;
 
-  // trims the data to fit within the reassembler window bounds 
+  // trims the data to fit within the reassembler window bounds
   if ( first_index < next_expected_index ) {
     data = data.substr( next_expected_index - first_index );
     first_index = next_expected_index;
